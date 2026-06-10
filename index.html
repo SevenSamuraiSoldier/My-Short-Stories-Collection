@@ -50,6 +50,7 @@
                 --action-btn-svg-size: 24px;
                 --action-btn-svg-size-landscape: 24px;
                 --border-color-card: color-mix(in srgb, var(--bg-card), white 10%);
+                --card-width: 80vw; /* Added in v_5.0*/
             }
             html {
                 font-size: 20px;
@@ -215,9 +216,18 @@
                 background: var(--bg-card);
                 border-color: var(--bg-card);
                 border-color: var(--border-color-card);
+                position: relative;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                min-height: max-content;
+                height: auto;
+                max-width: 85vw;
+
             }
             .card img {
                 border-radius: 0.5rem;
+                width: calc(var(--card-width) - 50px) !important; /* Added in v_5.0 */
             }
             .card-header {
                 display: flex;
@@ -242,12 +252,13 @@
                 /* margin-right: 4rem; */ /* Removed in v_3.8 */
                 margin-right: 50px; /* Added in v_3.8 */
                 color: var(--text-card-title);
+                word-break: break-word; /* Added in v_5.0 */
             }
 
             .card-buttons {
                 display: flex;
                 /* gap: 0.5rem; */ /* Removed in v_3.8 */
-                position: absolute;
+                /* position: absolute;  */
                 flex-direction: column;
                 top: 0;
                 right: 0;
@@ -561,6 +572,12 @@
                     font-size: 1.25rem;
                     padding-inline: 2rem;
                 }
+                :root {
+                    --card-width: 30vw; /* Added in v_5.0 */
+                }
+                /* .card img {
+                    max-width: 300px;
+                } */
             }
             .master-div {
                 margin: 0;
@@ -721,6 +738,11 @@
             }
             details p {
                 white-space: break-spaces;
+                word-break: break-word;
+                /* max-width: 90%; */
+            }
+            #div-1 {
+                box-sizing: border-box;
             }
         </style>
     </head>
@@ -877,6 +899,14 @@ const dataMap = {
     defaultOptions: ',A*,A+,A,B+,B,C+,C',
     persistValue: true,
   },
+  pages: { type: 'input', text: 'Pages', filter: true, clickToCopy: true },
+  tropes: {
+    type: 'input',
+    text: 'Tropes',
+    filter: true,
+    clickToCopy: true,
+    labelVisibility: false,
+  },
   notes: {
     type: 'dropText',
     text: 'Notes',
@@ -885,6 +915,8 @@ const dataMap = {
     inputFieldType: 'textarea',
     rows: '4',
   },
+  url3: { type: 'link', text: 'Link 3' },
+  url4: { type: 'link', text: 'Link 4' },
   fav: {
     type: 'datalist',
     text: 'Fav.',
@@ -894,10 +926,10 @@ const dataMap = {
   },
 };
             
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////////////////////////////
 
             /* const keywordForFavorites = "fav"; */
-            const versionNumber = 4.9;
+            const versionNumber = 5.0;
             const versionFlashTime = 1000; // in ms (1000 ms = 1 sec)
 
             console.log("Collection Name: " + collectionName);
@@ -961,7 +993,7 @@ const dataMap = {
                 const el = document.getElementById("versionNumber");
                 if (!el) return;
 
-                el.textContent = `v_${versionNumber}`;
+                el.textContent = `v_${versionNumber.toFixed(1)}`;
 
                 setTimeout(() => {
                     el.textContent = "";
@@ -1495,7 +1527,16 @@ const dataMap = {
 
                 // Cancel Add/Edit
                 const cancelAddEditBtn = document.getElementById("cancelAddEditBtn");
-                cancelAddEditBtn.addEventListener("click", () => hideModal(addEditModal));
+                cancelAddEditBtn.addEventListener("click", () => {
+                    hideModal(addEditModal);
+                    // Clearing the Editing Photo data
+                    for (const key of Object.keys(dataMap)) {
+                        if (dataMap[key].type === "photo") {
+                            editingPhotoOGBase64[key] = "";
+                        }
+                    }
+                    // console.log(editingPhotoOGBase64); //For Debugging
+                });
             }
 
             function dynamicallyRenderCards(data, doc, dataMap) {
@@ -1598,14 +1639,16 @@ const dataMap = {
 
                 // Build card HTML
                 return `
-                    <div class="card-header">
-                        ${cardTitle}
-                        <div class="card-buttons">
-                            ${cardButtons}
+                    <div id="div-1">
+                        <div class="card-header">
+                            ${cardTitle}
+                        </div>
+                        <div class="card-details">
+                            ${cardDetails}
                         </div>
                     </div>
-                    <div class="card-details">
-                        ${cardDetails}
+                    <div class="card-buttons">
+                        ${cardButtons}
                     </div>
                 `;
             }
